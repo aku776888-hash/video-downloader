@@ -1,12 +1,8 @@
-# fly.toml app configuration file generated for video-downloader on 2026-11-05T03:34:32Z
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'video-downloader'
-primary_region = 'ams'
+primary_region = 'sin'
 
 [build]
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -16,7 +12,6 @@ primary_region = 'ams'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 256
