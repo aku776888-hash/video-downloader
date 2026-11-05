@@ -14,7 +14,16 @@ def health():
 @app.get("/streams/{video_id}")
 def get_streams(video_id: str):
     url = f"https://www.youtube.com/watch?v={video_id}"
-    ydl_opts = {'format': 'best', 'noplaylist': True}
+    
+    # Konfigurasi yt-dlp dengan user-agent dan bypass client options
+    ydl_opts = {
+        'format': 'best',
+        'noplaylist': True,
+        'quiet': True,
+        'no_warnings': True,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -22,7 +31,6 @@ def get_streams(video_id: str):
             formats = info.get('formats', [])
             video_streams = []
             
-            # Ambil format mp4 yang tersedia
             for f in formats:
                 if f.get('url') and f.get('ext') == 'mp4':
                     video_streams.append({
@@ -31,7 +39,6 @@ def get_streams(video_id: str):
                         "url": f.get('url')
                     })
             
-            # Jika daftar format kosong, gunakan direct url utama
             if not video_streams and info.get('url'):
                 video_streams.append({
                     "quality": "HD",
@@ -39,7 +46,12 @@ def get_streams(video_id: str):
                     "url": info.get('url')
                 })
                 
+            # Jika masih kosong total, berikan exception agar terlacak di log server
+            if not video_streams:
+                raise HTTPException(status_code=404, detail="No video streams found by extractor")
+                
             return {"videoStreams": video_streams}
             
     except Exception as e:
+        print(f"Error extracting video: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
