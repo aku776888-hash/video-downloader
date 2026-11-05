@@ -15,14 +15,13 @@ def health():
 def get_streams(video_id: str):
     url = f"https://www.youtube.com/watch?v={video_id}"
     
-    # Konfigurasi yt-dlp dengan user-agent dan bypass client options
+    # Konfigurasi yt-dlp yang diperbarui agar menghindari error format
     ydl_opts = {
         'format': 'best',
         'noplaylist': True,
         'quiet': True,
         'no_warnings': True,
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
     }
     
     try:
@@ -45,13 +44,11 @@ def get_streams(video_id: str):
                     "format": "MP4",
                     "url": info.get('url')
                 })
-                
-            # Jika masih kosong total, berikan exception agar terlacak di log server
+            
             if not video_streams:
-                raise HTTPException(status_code=404, detail="No video streams found by extractor")
+                raise HTTPException(status_code=404, detail="No downloadable streams found.")
                 
             return {"videoStreams": video_streams}
             
     except Exception as e:
-        print(f"Error extracting video: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
