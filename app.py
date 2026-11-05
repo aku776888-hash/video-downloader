@@ -15,13 +15,18 @@ def health():
 def get_streams(video_id: str):
     url = f"https://www.youtube.com/watch?v={video_id}"
     
-    # Konfigurasi yt-dlp yang diperbarui agar menghindari error format
+    # Konfigurasi yt-dlp dengan opsi player_client untuk menghindari blokir bot datacenter
     ydl_opts = {
         'format': 'best',
         'noplaylist': True,
         'quiet': True,
         'no_warnings': True,
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web'],
+                'skip': ['hls', 'dash']
+            }
+        }
     }
     
     try:
