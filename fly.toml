@@ -1,5 +1,5 @@
 app = 'video-downloader'
-primary_region = 'iad'
+primary_region = 'hkg'
 
 [build]
 
@@ -15,3 +15,7 @@ primary_region = 'iad'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+# Auto ganti region kalau hkg down, Fly.io akan nyalain di region cadangan
+[[regions]]
+# ini biar Fly tau ada cadangan
