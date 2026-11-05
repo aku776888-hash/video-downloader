@@ -1,10 +1,12 @@
 import re
+import os
 import requests
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 
 app = FastAPI(title="TaufikDownloader - Final")
 
-# LIST SERVER YANG STABIL DI FLY.IO SIN (aku hapus yang .coffee)
+# LIST SERVER YANG STABIL DI FLY.IO SIN
 PIPED_SERVERS = [
     "https://pipedapi.kavin.rocks",
     "https://pipedapi.moomoo.me",
@@ -17,8 +19,10 @@ INVIDIOUS_SERVERS = [
     "https://invidious.nerdvpn.de",
 ]
 
-@app.get("/")
-def root():
+@app.get("/", include_in_schema=False)
+def serve_home():
+    if os.path.exists("index.html"):
+        return FileResponse("index.html")
     return {"message": "LIVE", "status": "online"}
 
 @app.get("/health")
@@ -30,7 +34,7 @@ def get_streams(video_id: str):
     if not re.fullmatch(r"[a-zA-Z0-9_-]{11}", video_id):
         raise HTTPException(status_code=400, detail="Invalid ID")
 
-    # 1. COBA PIPED DULU (paling ampuh)
+    # 1. COBA PIPED DULU
     for server in PIPED_SERVERS:
         try:
             r = requests.get(f"{server}/streams/{video_id}", timeout=10)
@@ -63,7 +67,7 @@ def get_streams(video_id: str):
         except:
             continue
 
-    # 3. FALLBACK TERAKHIR: YT-DLP IOS (tanpa cookie)
+    # 3. FALLBACK YT-DLP IOS
     try:
         import yt_dlp
         ydl_opts = {
@@ -86,7 +90,7 @@ def get_streams(video_id: str):
                 streams = list(unique.values())
                 streams.sort(key=lambda x: int(re.search(r"\d+", x["quality"]).group()) if re.search(r"\d+", x["quality"]) else 0, reverse=True)
                 return {"videoStreams": streams, "source": "yt-dlp-ios"}
-    except Exception as e:
+    except:
         pass
 
     raise HTTPException(status_code=500, detail="Semua server down, coba lagi 5 detik")
